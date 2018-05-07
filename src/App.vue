@@ -1,7 +1,16 @@
 <template>
   <div>
       <h5>Filters:</h5>
-      <filter-controls :filter.sync="filters" :times="sessionTimes" :categories="categories" :rooms="rooms" :levels="levels"></filter-controls>
+      <div class="search form-control">
+          <input class="search__input" type="search" name="" id="" v-model="search" placeholder="keyword search">
+          <div class="search__controls">
+            <i class="fas fa-times" v-show="search.length>0" @click="search=''"></i>
+            <i class="fas fa-search"></i>
+          </div>
+      </div>
+      <br>
+
+      <filter-controls :filter.sync="filters" :times="sessionTimes" :categories="categories" :rooms="rooms" :experienceLevels="experienceLevels"></filter-controls>
       <br>
       <br>
       <table class="table">
@@ -45,7 +54,8 @@
 </template>
 
 <script>
-import { sessions } from "./data/sessions";
+import sessionService from "./services/sessionService";
+import experienceLevels from "./data/experienceLevels";
 import FilterControls from "./components/FilterControls";
 
 export default {
@@ -55,91 +65,53 @@ export default {
   },
   data() {
     return {
-      sessions,
-      filteredSessions : [],
+      experienceLevels,
+      filteredSessions: [],
+      search: "",
       filters: {
         time: null,
         categories: null,
-        level: null,
+        experienceLevel: null,
         room: null,
         favorites: false
-      },
-      levels : [
-        {
-          id: '100',
-          name: 'Beginner'
-        },
-        {
-          id: '200',
-          name: 'Intermediate'
-        },
-        {
-          id: '300',
-          name: 'Advanced'
-        }
-      ]
+      }
     };
   },
   methods: {
     getSessionsByTime(time) {
-      return this.filteredSessions.filter(x => x.time === time);
+      return sessionService.getSessionsByTime(this.filteredSessions, time);
     },
     getExperienceLevel(level) {
-      return this.levels.find(x=>x.id === level).name;
+      return this.experienceLevels.find(x => x.id === level).name;
     },
     markFavorite(session) {
-      let sessions = this.getSessions();
-      sessions.find(x => x.title === session.title).favorite = !session.favorite;
-      this.saveSessions(sessions);
-      this.filteredSessions = this.getFilterSessions(this.filters);
-    },
-    saveSessions(sessions) {
-      localStorage.setItem("session-tracker", JSON.stringify(sessions));
-    },
-    getSessions() {
-      return JSON.parse(localStorage.getItem("session-tracker")) || sessions;
-    },
-    getFilterSessions(filters) {
-        let sessions = this.getSessions();
-
-        if (filters.time)
-          sessions = sessions.filter(x => x.time === filters.time);
-
-        if (filters.categories)
-          sessions = sessions.filter(x => x.primaryCategory === filters.categories);
-
-        if (filters.level)
-          sessions = sessions.filter(x => x.level === filters.level);
-
-        if (filters.rooms)
-          sessions = sessions.filter(x => x.room === filters.rooms);
-
-        if (filters.favorites)
-          sessions = sessions.filter(x => x.favorite === filters.favorites);
-
-        return sessions;
+      sessionService.updateSession(session);
+      this.filteredSessions = sessionService.getFilteredSessions(this.filters, this.search);
     }
   },
   computed: {
     sessionTimes() {
-      return [...new Set(this.sessions.map(x => x.time))];
+      return sessionService.getSessionTimes();
     },
     categories() {
-      return [...new Set(this.sessions.map(x => x.primaryCategory).sort())];
+      return sessionService.getCategories();
     },
     rooms() {
-      return [...new Set(this.sessions.map(x => x.room))];
+      return sessionService.getRooms();
     }
   },
   mounted() {
-    this.filteredSessions = this.getSessions();
+    this.filteredSessions = sessionService.getSessions();
   },
   watch: {
     filters: {
       handler(newFilter) {
-        this.filteredSessions = this.getFilterSessions(newFilter);
+        this.filteredSessions = sessionService.getFilteredSessions(newFilter, this.search);
       },
       deep: true
+    },
+    search() {
+      this.filteredSessions = sessionService.getFilteredSessions(this.filters, this.search);
     }
   }
 };
@@ -148,9 +120,35 @@ export default {
 <style>
 button {
   border: 0;
+  background-color: white;
 }
 
-table {
-  margin-bottom: 3rem;
+.search {
+  max-width: 300px;
+  padding-right: 0;
+}
+
+.search__input {
+  width: 100%;
+  max-width: 200px;
+  border: 0;
+}
+
+.search__input:focus {
+  outline: none;
+}
+
+.search__controls {
+  float: right;
+}
+
+.search__controls .fas {
+  width: 25px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.table .thead-light th {
+  border-top: 0;
 }
 </style>

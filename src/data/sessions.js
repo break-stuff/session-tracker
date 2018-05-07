@@ -1,4 +1,4 @@
-export const sessions = [{
+export default [{
     time: '7:30 AM',
     room: 'Concourse',
     name: 'Stir Trek',
