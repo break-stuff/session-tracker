@@ -15,10 +15,10 @@ export default {
     this.saveSessions(allSessions);
   },
 
-  getFilteredSessions(filters, search) {
+  getFilteredSessions(filters) {
     let filteredSessions = this.getSessions();
 
-    filteredSessions = this.getSearchResults(filteredSessions, search);
+    filteredSessions = this.getSearchResults(filteredSessions, filters.search);
     filteredSessions = this.getSessionsByTime(filteredSessions, filters.time);
     filteredSessions = this.getSessionsByCategories(filteredSessions, filters.categories);
     filteredSessions = this.getSessionsByExperienceLevel(filteredSessions, filters.experienceLevel);

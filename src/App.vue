@@ -1,16 +1,6 @@
 <template>
   <div>
-      <h5>Filters:</h5>
-      <div class="search form-control">
-          <input class="search__input" type="search" name="" id="" v-model="search" placeholder="keyword search">
-          <div class="search__controls">
-            <i class="fas fa-times" v-show="search.length>0" @click="search=''"></i>
-            <i class="fas fa-search"></i>
-          </div>
-      </div>
-      <br>
-
-      <filter-controls :filter.sync="filters" :times="sessionTimes" :categories="categories" :rooms="rooms" :experienceLevels="experienceLevels"></filter-controls>
+      <filter-controls :filters.sync="filters" :times="sessionTimes" :categories="categories" :rooms="rooms" :experienceLevels="experienceLevels"></filter-controls>
       <br>
       <br>
       <table class="table">
@@ -67,8 +57,8 @@ export default {
     return {
       experienceLevels,
       filteredSessions: [],
-      search: "",
       filters: {
+        search: "",
         time: null,
         categories: null,
         experienceLevel: null,
@@ -106,12 +96,9 @@ export default {
   watch: {
     filters: {
       handler(newFilter) {
-        this.filteredSessions = sessionService.getFilteredSessions(newFilter, this.search);
+        this.filteredSessions = sessionService.getFilteredSessions(newFilter);
       },
       deep: true
-    },
-    search() {
-      this.filteredSessions = sessionService.getFilteredSessions(this.filters, this.search);
     }
   }
 };
